@@ -7,6 +7,7 @@ import type {
   Donor,
   Fund,
   NewDonationInput,
+  NewDonorInput,
   Receipt,
 } from './types'
 import { DONATION_TYPE_LABEL } from './types'
@@ -244,6 +245,25 @@ export const db = { donors, campaigns, funds, donations, receipts }
 
 // Tracks the next sequential donation id (seed ids are do_1..do_N).
 let donationSeq = donations.length
+
+// Tracks the next sequential donor id (seed ids are dn_1..dn_N).
+let donorSeq = donors.length
+
+// Inserts a new donor into the in-memory store. New donors start with no
+// giving history, so lifetime value is 0 until donations are recorded.
+export function createDonor(input: NewDonorInput): Donor {
+  const donor: Donor = {
+    id: `dn_${++donorSeq}`,
+    type: input.type,
+    name: input.name.trim(),
+    email: input.email.trim(),
+    lifetimeValue: 0,
+    lastGiftAt: '',
+    tags: input.tags,
+  }
+  donors.push(donor)
+  return donor
+}
 
 // Inserts a new donation into the in-memory store and recomputes derived
 // rollups so dashboards, campaigns, funds and donors stay consistent.

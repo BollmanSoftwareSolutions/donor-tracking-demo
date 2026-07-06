@@ -124,6 +124,14 @@ export interface NewDonationInput {
   note?: string
 }
 
+// Payload for creating a donor.
+export interface NewDonorInput {
+  type: 'individual' | 'organization'
+  name: string
+  email: string
+  tags: string[]
+}
+
 export const DONATION_TYPE_LABEL: Record<DonationType, string> = {
   monetary_online: 'Online monetary',
   offline_cash_check: 'Offline cash/check',

@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { buildDashboard, createDonation, currentUser, db } from '../api/mockData'
+import {
+  buildDashboard,
+  createDonation,
+  createDonor,
+  currentUser,
+  db,
+} from '../api/mockData'
 
 const activeAmount = () =>
   db.donations
@@ -159,5 +165,35 @@ describe('createDonation', () => {
       .filter((d) => d.status !== 'refunded' && d.status !== 'voided')
       .reduce((s, d) => s + d.amount, 0)
     expect(totalLifetime).toBe(activeTotal)
+  })
+})
+
+describe('createDonor', () => {
+  it('appends a donor with zero lifetime value and no gift history', () => {
+    const beforeCount = db.donors.length
+    const created = createDonor({
+      type: 'individual',
+      name: '  Dana Fielding  ',
+      email: '  dana@example.org  ',
+      tags: ['major-gift'],
+    })
+
+    expect(db.donors).toHaveLength(beforeCount + 1)
+    expect(created.name).toBe('Dana Fielding')
+    expect(created.email).toBe('dana@example.org')
+    expect(created.lifetimeValue).toBe(0)
+    expect(created.lastGiftAt).toBe('')
+    expect(created.tags).toEqual(['major-gift'])
+  })
+
+  it('supports organization donors', () => {
+    const created = createDonor({
+      type: 'organization',
+      name: 'Cedar Community Fund',
+      email: 'giving@cedarfund.org',
+      tags: [],
+    })
+    expect(created.type).toBe('organization')
+    expect(db.donors.some((d) => d.id === created.id)).toBe(true)
   })
 })
