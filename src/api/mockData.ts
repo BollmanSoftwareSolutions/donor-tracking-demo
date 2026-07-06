@@ -9,6 +9,7 @@ import type {
   NewCampaignInput,
   NewDonationInput,
   NewDonorInput,
+  NewFundInput,
   Receipt,
 } from './types'
 import { DONATION_TYPE_LABEL } from './types'
@@ -252,6 +253,22 @@ let donorSeq = donors.length
 
 // Tracks the next sequential campaign id (seed ids are cm_1..cm_N).
 let campaignSeq = campaigns.length
+
+// Tracks the next sequential fund id (seed ids are fd_1..fd_N).
+let fundSeq = funds.length
+
+// Inserts a new fund into the in-memory store. New funds have no giving yet.
+export function createFund(input: NewFundInput): Fund {
+  const fund: Fund = {
+    id: `fd_${++fundSeq}`,
+    name: input.name.trim(),
+    code: input.code.trim().toUpperCase(),
+    isRestricted: input.isRestricted,
+    raisedAmount: 0,
+  }
+  funds.push(fund)
+  return fund
+}
 
 // Inserts a new campaign into the in-memory store. New campaigns start with
 // no giving yet, so raised amount and donor count are 0.

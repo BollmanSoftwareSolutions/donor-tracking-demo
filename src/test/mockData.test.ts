@@ -4,6 +4,7 @@ import {
   createCampaign,
   createDonation,
   createDonor,
+  createFund,
   currentUser,
   db,
 } from '../api/mockData'
@@ -226,5 +227,32 @@ describe('createCampaign', () => {
       status: 'draft',
     })
     expect(created.groupName).toBeNull()
+  })
+})
+
+describe('createFund', () => {
+  it('appends a fund, upper-casing the code and zeroing giving', () => {
+    const beforeCount = db.funds.length
+    const created = createFund({
+      name: '  Youth Programs  ',
+      code: ' yth ',
+      isRestricted: true,
+    })
+
+    expect(db.funds).toHaveLength(beforeCount + 1)
+    expect(created.name).toBe('Youth Programs')
+    expect(created.code).toBe('YTH')
+    expect(created.isRestricted).toBe(true)
+    expect(created.raisedAmount).toBe(0)
+  })
+
+  it('supports unrestricted funds', () => {
+    const created = createFund({
+      name: 'General Reserve',
+      code: 'RES',
+      isRestricted: false,
+    })
+    expect(created.isRestricted).toBe(false)
+    expect(db.funds.some((f) => f.id === created.id)).toBe(true)
   })
 })

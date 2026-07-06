@@ -4,6 +4,7 @@ import type {
   NewCampaignInput,
   NewDonationInput,
   NewDonorInput,
+  NewFundInput,
 } from '../api/types'
 
 export function useDashboard() {
@@ -74,6 +75,16 @@ export function useCreateCampaign() {
 
 export function useFunds() {
   return useQuery({ queryKey: ['funds'], queryFn: () => apiClient.getFunds() })
+}
+
+export function useCreateFund() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: NewFundInput) => apiClient.createFund(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['funds'] })
+    },
+  })
 }
 
 export function useReceipts() {

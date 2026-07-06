@@ -1,4 +1,4 @@
-import { buildDashboard, createCampaign, createDonation, createDonor, currentUser, db } from './mockData'
+import { buildDashboard, createCampaign, createDonation, createDonor, createFund, currentUser, db } from './mockData'
 import type {
   Campaign,
   CurrentUser,
@@ -9,6 +9,7 @@ import type {
   NewCampaignInput,
   NewDonationInput,
   NewDonorInput,
+  NewFundInput,
   Receipt,
 } from './types'
 
@@ -48,6 +49,9 @@ export const apiClient = {
   },
   getFunds(): Promise<Fund[]> {
     return delay(db.funds)
+  },
+  createFund(input: NewFundInput): Promise<Fund> {
+    return delay(createFund(input))
   },
   getReceipts(): Promise<Receipt[]> {
     return delay(db.receipts)
