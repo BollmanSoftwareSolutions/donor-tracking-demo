@@ -1,4 +1,4 @@
-import { buildDashboard, currentUser, db } from './mockData'
+import { buildDashboard, createDonation, currentUser, db } from './mockData'
 import type {
   Campaign,
   CurrentUser,
@@ -6,6 +6,7 @@ import type {
   Donation,
   Donor,
   Fund,
+  NewDonationInput,
   Receipt,
 } from './types'
 
@@ -30,6 +31,9 @@ export const apiClient = {
     return delay(
       [...db.donations].sort((a, b) => b.receivedAt.localeCompare(a.receivedAt)),
     )
+  },
+  createDonation(input: NewDonationInput): Promise<Donation> {
+    return delay(createDonation(input))
   },
   getCampaigns(): Promise<Campaign[]> {
     return delay(db.campaigns)

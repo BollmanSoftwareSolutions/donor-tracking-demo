@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildDashboard, currentUser, db } from '../api/mockData'
+import { buildDashboard, createDonation, currentUser, db } from '../api/mockData'
 
 const activeAmount = () =>
   db.donations
@@ -104,5 +104,60 @@ describe('buildDashboard', () => {
     expect(data.kpis.activeCampaigns).toBe(
       db.campaigns.filter((c) => c.status === 'active').length,
     )
+  })
+})
+
+describe('createDonation', () => {
+  const today = new Date().toISOString().slice(0, 10)
+
+  it('appends a donation and updates donor and campaign rollups', () => {
+    const donor = db.donors[0]
+    const campaign = db.campaigns[0]
+    const beforeCount = db.donations.length
+    const beforeLifetime = donor.lifetimeValue
+    const beforeRaised = campaign.raisedAmount
+
+    const created = createDonation({
+      donorId: donor.id,
+      type: 'offline_cash_check',
+      amount: 250,
+      receivedAt: today,
+      campaignId: campaign.id,
+      fundId: null,
+    })
+
+    expect(db.donations).toHaveLength(beforeCount + 1)
+    expect(created.donorName).toBe(donor.name)
+    expect(created.status).toBe('recorded')
+    expect(donor.lifetimeValue).toBe(beforeLifetime + 250)
+    expect(campaign.raisedAmount).toBe(beforeRaised + 250)
+  })
+
+  it('marks online monetary donations as settled', () => {
+    const created = createDonation({
+      donorId: db.donors[1].id,
+      type: 'monetary_online',
+      amount: 100,
+      receivedAt: today,
+      campaignId: null,
+      fundId: null,
+    })
+    expect(created.status).toBe('settled')
+  })
+
+  it('keeps total donor lifetime value equal to active giving', () => {
+    createDonation({
+      donorId: db.donors[2].id,
+      type: 'in_kind',
+      amount: 500,
+      receivedAt: today,
+      campaignId: null,
+      fundId: null,
+    })
+    const totalLifetime = db.donors.reduce((s, d) => s + d.lifetimeValue, 0)
+    const activeTotal = db.donations
+      .filter((d) => d.status !== 'refunded' && d.status !== 'voided')
+      .reduce((s, d) => s + d.amount, 0)
+    expect(totalLifetime).toBe(activeTotal)
   })
 })
