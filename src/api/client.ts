@@ -1,4 +1,4 @@
-import { buildDashboard, createDonation, currentUser, db } from './mockData'
+import { buildDashboard, createDonation, createDonor, currentUser, db } from './mockData'
 import type {
   Campaign,
   CurrentUser,
@@ -7,6 +7,7 @@ import type {
   Donor,
   Fund,
   NewDonationInput,
+  NewDonorInput,
   Receipt,
 } from './types'
 
@@ -26,6 +27,9 @@ export const apiClient = {
   },
   getDonors(): Promise<Donor[]> {
     return delay(db.donors)
+  },
+  createDonor(input: NewDonorInput): Promise<Donor> {
+    return delay(createDonor(input))
   },
   getDonations(): Promise<Donation[]> {
     return delay(

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../api/client'
-import type { NewDonationInput } from '../api/types'
+import type { NewDonationInput, NewDonorInput } from '../api/types'
 
 export function useDashboard() {
   return useQuery({
@@ -11,6 +11,17 @@ export function useDashboard() {
 
 export function useDonors() {
   return useQuery({ queryKey: ['donors'], queryFn: () => apiClient.getDonors() })
+}
+
+export function useCreateDonor() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: NewDonorInput) => apiClient.createDonor(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['donors'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+    },
+  })
 }
 
 export function useDonations() {

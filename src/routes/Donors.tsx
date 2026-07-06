@@ -5,6 +5,8 @@ import Card from '@mui/material/Card'
 import Chip from '@mui/material/Chip'
 import InputAdornment from '@mui/material/InputAdornment'
 import Skeleton from '@mui/material/Skeleton'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 import Stack from '@mui/material/Stack'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
@@ -17,12 +19,21 @@ import Typography from '@mui/material/Typography'
 import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
 import PageHeader from '../components/PageHeader'
+import AddDonorDialog from '../components/AddDonorDialog'
 import { useDonors } from '../hooks/useApi'
 import { formatCurrency, formatDate } from '../components/format'
 
 export default function Donors() {
   const { data, isLoading } = useDonors()
   const [query, setQuery] = useState('')
+  const [addOpen, setAddOpen] = useState(false)
+  const [addKey, setAddKey] = useState(0)
+  const [toast, setToast] = useState<string | null>(null)
+
+  const openAdd = () => {
+    setAddKey((k) => k + 1)
+    setAddOpen(true)
+  }
 
   const filtered = useMemo(() => {
     if (!data) return []
@@ -43,7 +54,7 @@ export default function Donors() {
         title="Donors"
         subtitle="Search and manage your organization's donors"
         action={
-          <Button variant="contained" startIcon={<AddIcon />}>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={openAdd}>
             Add donor
           </Button>
         }
@@ -134,7 +145,7 @@ export default function Donors() {
                       {formatCurrency(d.lifetimeValue)}
                     </TableCell>
                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                      {formatDate(d.lastGiftAt)}
+                      {d.lastGiftAt ? formatDate(d.lastGiftAt) : '—'}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -151,6 +162,29 @@ export default function Donors() {
           </Table>
         </TableContainer>
       </Card>
+
+      <AddDonorDialog
+        key={addKey}
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onCreated={(donorName) => setToast(`Donor ${donorName} added.`)}
+      />
+
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={4000}
+        onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setToast(null)}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {toast}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }
