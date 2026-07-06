@@ -132,6 +132,14 @@ export interface NewDonorInput {
   tags: string[]
 }
 
+// Payload for creating a campaign.
+export interface NewCampaignInput {
+  name: string
+  groupName: string | null
+  goalAmount: number
+  status: CampaignStatus
+}
+
 export const DONATION_TYPE_LABEL: Record<DonationType, string> = {
   monetary_online: 'Online monetary',
   offline_cash_check: 'Offline cash/check',

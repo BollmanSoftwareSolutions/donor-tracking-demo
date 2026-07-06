@@ -6,6 +6,7 @@ import type {
   DonationType,
   Donor,
   Fund,
+  NewCampaignInput,
   NewDonationInput,
   NewDonorInput,
   Receipt,
@@ -248,6 +249,26 @@ let donationSeq = donations.length
 
 // Tracks the next sequential donor id (seed ids are dn_1..dn_N).
 let donorSeq = donors.length
+
+// Tracks the next sequential campaign id (seed ids are cm_1..cm_N).
+let campaignSeq = campaigns.length
+
+// Inserts a new campaign into the in-memory store. New campaigns start with
+// no giving yet, so raised amount and donor count are 0.
+export function createCampaign(input: NewCampaignInput): Campaign {
+  const group = input.groupName?.trim()
+  const campaign: Campaign = {
+    id: `cm_${++campaignSeq}`,
+    name: input.name.trim(),
+    groupName: group ? group : null,
+    goalAmount: input.goalAmount,
+    raisedAmount: 0,
+    status: input.status,
+    donorCount: 0,
+  }
+  campaigns.push(campaign)
+  return campaign
+}
 
 // Inserts a new donor into the in-memory store. New donors start with no
 // giving history, so lifetime value is 0 until donations are recorded.

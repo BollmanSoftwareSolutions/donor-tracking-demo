@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
@@ -5,10 +6,13 @@ import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
 import LinearProgress from '@mui/material/LinearProgress'
 import Skeleton from '@mui/material/Skeleton'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import AddIcon from '@mui/icons-material/Add'
 import PageHeader from '../components/PageHeader'
+import AddCampaignDialog from '../components/AddCampaignDialog'
 import { useCampaigns } from '../hooks/useApi'
 import { formatCurrency } from '../components/format'
 import type { CampaignStatus } from '../api/types'
@@ -21,6 +25,14 @@ const STATUS_COLOR: Record<CampaignStatus, 'success' | 'default' | 'warning'> = 
 
 export default function Campaigns() {
   const { data, isLoading } = useCampaigns()
+  const [addOpen, setAddOpen] = useState(false)
+  const [addKey, setAddKey] = useState(0)
+  const [toast, setToast] = useState<string | null>(null)
+
+  const openAdd = () => {
+    setAddKey((k) => k + 1)
+    setAddOpen(true)
+  }
 
   return (
     <Box>
@@ -28,7 +40,7 @@ export default function Campaigns() {
         title="Campaigns"
         subtitle="Track progress toward each campaign goal"
         action={
-          <Button variant="contained" startIcon={<AddIcon />}>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={openAdd}>
             Add campaign
           </Button>
         }
@@ -112,6 +124,29 @@ export default function Campaigns() {
           )
         })}
       </Box>
+
+      <AddCampaignDialog
+        key={addKey}
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onCreated={(name) => setToast(`Campaign "${name}" created.`)}
+      />
+
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={4000}
+        onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setToast(null)}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {toast}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

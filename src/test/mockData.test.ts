@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   buildDashboard,
+  createCampaign,
   createDonation,
   createDonor,
   currentUser,
@@ -195,5 +196,35 @@ describe('createDonor', () => {
     })
     expect(created.type).toBe('organization')
     expect(db.donors.some((d) => d.id === created.id)).toBe(true)
+  })
+})
+
+describe('createCampaign', () => {
+  it('appends a campaign with zeroed rollups', () => {
+    const beforeCount = db.campaigns.length
+    const created = createCampaign({
+      name: '  Winter Match  ',
+      groupName: 'Rapid Response',
+      goalAmount: 25000,
+      status: 'active',
+    })
+
+    expect(db.campaigns).toHaveLength(beforeCount + 1)
+    expect(created.name).toBe('Winter Match')
+    expect(created.groupName).toBe('Rapid Response')
+    expect(created.goalAmount).toBe(25000)
+    expect(created.status).toBe('active')
+    expect(created.raisedAmount).toBe(0)
+    expect(created.donorCount).toBe(0)
+  })
+
+  it('treats a blank group as a standalone campaign', () => {
+    const created = createCampaign({
+      name: 'Standalone Drive',
+      groupName: null,
+      goalAmount: 5000,
+      status: 'draft',
+    })
+    expect(created.groupName).toBeNull()
   })
 })
