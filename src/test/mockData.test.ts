@@ -19,6 +19,16 @@ describe('seed data (db)', () => {
     expect(db.donations.every((d) => donorIds.has(d.donorId))).toBe(true)
   })
 
+  it('dates every donation within the current year and never in the future', () => {
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const today = now.toISOString().slice(0, 10)
+    for (const d of db.donations) {
+      expect(d.receivedAt.slice(0, 4)).toBe(String(currentYear))
+      expect(d.receivedAt <= today).toBe(true)
+    }
+  })
+
   it('rolls up donor lifetime value from active donations', () => {
     const totalLifetime = db.donors.reduce((s, d) => s + d.lifetimeValue, 0)
     expect(totalLifetime).toBe(activeAmount())
@@ -48,9 +58,17 @@ describe('buildDashboard', () => {
   })
 
   it('covers January through the current month', () => {
-    expect(data.monthlyTotals).toHaveLength(7)
+    const now = new Date()
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ]
+    const expectedLength = now.getMonth() + 1
+    expect(data.monthlyTotals).toHaveLength(expectedLength)
     expect(data.monthlyTotals[0].month).toBe('Jan')
-    expect(data.monthlyTotals[6].month).toBe('Jul')
+    expect(data.monthlyTotals[expectedLength - 1].month).toBe(
+      monthNames[now.getMonth()],
+    )
   })
 
   it('donation type shares sum to the YTD total', () => {
