@@ -140,6 +140,13 @@ export interface NewCampaignInput {
   status: CampaignStatus
 }
 
+// Payload for creating a fund (designation).
+export interface NewFundInput {
+  name: string
+  code: string
+  isRestricted: boolean
+}
+
 export const DONATION_TYPE_LABEL: Record<DonationType, string> = {
   monetary_online: 'Online monetary',
   offline_cash_check: 'Offline cash/check',
