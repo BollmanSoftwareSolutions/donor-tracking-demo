@@ -5,6 +5,8 @@ import Card from '@mui/material/Card'
 import Chip from '@mui/material/Chip'
 import MenuItem from '@mui/material/MenuItem'
 import Skeleton from '@mui/material/Skeleton'
+import Snackbar from '@mui/material/Snackbar'
+import Alert from '@mui/material/Alert'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
@@ -15,6 +17,7 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import AddIcon from '@mui/icons-material/Add'
 import PageHeader from '../components/PageHeader'
+import AddDonationDialog from '../components/AddDonationDialog'
 import { useDonations } from '../hooks/useApi'
 import { formatCurrency, formatDate } from '../components/format'
 import { DONATION_TYPE_LABEL, type DonationStatus } from '../api/types'
@@ -29,6 +32,14 @@ const STATUS_COLOR: Record<DonationStatus, 'success' | 'default' | 'error' | 'wa
 export default function Donations() {
   const { data, isLoading } = useDonations()
   const [typeFilter, setTypeFilter] = useState('all')
+  const [addOpen, setAddOpen] = useState(false)
+  const [addKey, setAddKey] = useState(0)
+  const [toast, setToast] = useState<string | null>(null)
+
+  const openAdd = () => {
+    setAddKey((k) => k + 1)
+    setAddOpen(true)
+  }
 
   const rows = useMemo(() => {
     if (!data) return []
@@ -43,7 +54,11 @@ export default function Donations() {
         title="Donations"
         subtitle="All recorded gifts across types and campaigns"
         action={
-          <Button variant="contained" startIcon={<AddIcon />}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openAdd}
+          >
             Add donation
           </Button>
         }
@@ -133,6 +148,31 @@ export default function Donations() {
           </Table>
         </TableContainer>
       </Card>
+
+      <AddDonationDialog
+        key={addKey}
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onCreated={(donorName) =>
+          setToast(`Donation from ${donorName} recorded.`)
+        }
+      />
+
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={4000}
+        onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setToast(null)}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {toast}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

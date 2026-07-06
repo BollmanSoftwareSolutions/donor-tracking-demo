@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../api/client'
+import type { NewDonationInput } from '../api/types'
 
 export function useDashboard() {
   return useQuery({
@@ -16,6 +17,25 @@ export function useDonations() {
   return useQuery({
     queryKey: ['donations'],
     queryFn: () => apiClient.getDonations(),
+  })
+}
+
+export function useCreateDonation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: NewDonationInput) => apiClient.createDonation(input),
+    onSuccess: () => {
+      // A new gift affects lists and every derived rollup.
+      for (const key of [
+        'donations',
+        'dashboard',
+        'campaigns',
+        'funds',
+        'donors',
+      ]) {
+        queryClient.invalidateQueries({ queryKey: [key] })
+      }
+    },
   })
 }
 

@@ -113,6 +113,17 @@ export interface DashboardData {
   recentDonations: Donation[]
 }
 
+// Payload for creating a donation (shared by mock and future http transports).
+export interface NewDonationInput {
+  donorId: string
+  type: DonationType
+  amount: number
+  receivedAt: string
+  campaignId: string | null
+  fundId: string | null
+  note?: string
+}
+
 export const DONATION_TYPE_LABEL: Record<DonationType, string> = {
   monetary_online: 'Online monetary',
   offline_cash_check: 'Offline cash/check',

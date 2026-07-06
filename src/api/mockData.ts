@@ -6,6 +6,7 @@ import type {
   DonationType,
   Donor,
   Fund,
+  NewDonationInput,
   Receipt,
 } from './types'
 import { DONATION_TYPE_LABEL } from './types'
@@ -240,6 +241,43 @@ rollup(donors, campaigns, funds, donations)
 const receipts = buildReceipts(donations)
 
 export const db = { donors, campaigns, funds, donations, receipts }
+
+// Tracks the next sequential donation id (seed ids are do_1..do_N).
+let donationSeq = donations.length
+
+// Inserts a new donation into the in-memory store and recomputes derived
+// rollups so dashboards, campaigns, funds and donors stay consistent.
+export function createDonation(input: NewDonationInput): Donation {
+  const donor = donors.find((d) => d.id === input.donorId)
+  const campaign = input.campaignId
+    ? (campaigns.find((c) => c.id === input.campaignId) ?? null)
+    : null
+  const fund = input.fundId
+    ? (funds.find((f) => f.id === input.fundId) ?? null)
+    : null
+
+  const donation: Donation = {
+    id: `do_${++donationSeq}`,
+    donorId: input.donorId,
+    donorName: donor?.name ?? 'Unknown donor',
+    type: input.type,
+    amount: input.amount,
+    currency: 'USD',
+    receivedAt: input.receivedAt,
+    campaignId: campaign?.id ?? null,
+    campaignName: campaign?.name ?? null,
+    fundId: fund?.id ?? null,
+    fundName: fund?.name ?? null,
+    status: input.type === 'monetary_online' ? 'settled' : 'recorded',
+  }
+
+  donations.push(donation)
+  if (donor && donation.receivedAt > donor.lastGiftAt) {
+    donor.lastGiftAt = donation.receivedAt
+  }
+  rollup(donors, campaigns, funds, donations)
+  return donation
+}
 
 export const currentUser: CurrentUser = {
   id: 'usr_1',
