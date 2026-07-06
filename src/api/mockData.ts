@@ -31,12 +31,31 @@ function money(min: number, max: number): number {
   return Math.round((min + rand() * (max - min)) / 5) * 5
 }
 
-const CURRENT_YEAR = 2026
 const MONTHS = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
 ]
-const CURRENT_MONTH_INDEX = 6 // July (0-based), matches demo "today" 2026-07-05
+
+// Dates are generated relative to "today" so the demo never goes stale.
+const NOW = new Date()
+const CURRENT_YEAR = NOW.getFullYear()
+const CURRENT_MONTH_INDEX = NOW.getMonth() // 0-based
+const CURRENT_DAY = NOW.getDate()
+
+function daysInMonth(monthIndex: number): number {
+  return new Date(CURRENT_YEAR, monthIndex + 1, 0).getDate()
+}
+
+function isoDate(monthIndex: number, day: number): string {
+  return `${CURRENT_YEAR}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+}
+
+// A random day within a month of the year-to-date window, never in the future.
+function randomDayInMonth(monthIndex: number): number {
+  const maxDay =
+    monthIndex >= CURRENT_MONTH_INDEX ? CURRENT_DAY : daysInMonth(monthIndex)
+  return 1 + Math.floor(rand() * maxDay)
+}
 
 const FIRST_NAMES = [
   'Amara', 'Liam', 'Sofia', 'Noah', 'Priya', 'Ethan', 'Mei', 'Diego',
@@ -52,12 +71,12 @@ const ORG_DONORS = [
 ]
 
 const CAMPAIGN_DEFS: Array<{ name: string; group: string | null; goal: number; status: Campaign['status'] }> = [
-  { name: '2026 Annual Appeal', group: '2026 Annual Appeal', goal: 150000, status: 'active' },
-  { name: 'Spring Gala', group: '2026 Annual Appeal', goal: 80000, status: 'active' },
-  { name: 'Scholarship Drive', group: '2026 Annual Appeal', goal: 60000, status: 'active' },
+  { name: `${CURRENT_YEAR} Annual Appeal`, group: `${CURRENT_YEAR} Annual Appeal`, goal: 150000, status: 'active' },
+  { name: 'Spring Gala', group: `${CURRENT_YEAR} Annual Appeal`, goal: 80000, status: 'active' },
+  { name: 'Scholarship Drive', group: `${CURRENT_YEAR} Annual Appeal`, goal: 60000, status: 'active' },
   { name: 'Emergency Relief', group: 'Rapid Response', goal: 100000, status: 'active' },
   { name: 'Capital Campaign', group: null, goal: 500000, status: 'active' },
-  { name: 'Giving Tuesday 2025', group: null, goal: 40000, status: 'closed' },
+  { name: `Giving Tuesday ${CURRENT_YEAR - 1}`, group: null, goal: 40000, status: 'closed' },
 ]
 
 const FUND_DEFS: Array<{ name: string; code: string; restricted: boolean }> = [
@@ -81,14 +100,14 @@ function buildDonors(): Donor[] {
       ? pick(ORG_DONORS) + ' ' + (i + 1)
       : `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`
     const lastMonth = Math.floor(rand() * (CURRENT_MONTH_INDEX + 1))
-    const lastDay = 1 + Math.floor(rand() * 27)
+    const lastDay = randomDayInMonth(lastMonth)
     donors.push({
       id: `dn_${i + 1}`,
       type: isOrg ? 'organization' : 'individual',
       name,
       email: name.toLowerCase().replace(/[^a-z]+/g, '.') + '@example.org',
       lifetimeValue: 0,
-      lastGiftAt: `${CURRENT_YEAR}-${String(lastMonth + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
+      lastGiftAt: isoDate(lastMonth, lastDay),
       tags: rand() < 0.3 ? ['major-gift'] : rand() < 0.5 ? ['recurring'] : [],
     })
   }
@@ -137,7 +156,7 @@ function buildDonations(
           : type === 'offline_cash_check'
             ? money(20, 1500)
             : money(10, 5000)
-      const day = 1 + Math.floor(rand() * 27)
+      const day = randomDayInMonth(m)
       donations.push({
         id: `do_${idc++}`,
         donorId: donor.id,
@@ -145,7 +164,7 @@ function buildDonations(
         type,
         amount,
         currency: 'USD',
-        receivedAt: `${CURRENT_YEAR}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+        receivedAt: isoDate(m, day),
         campaignId: campaign?.id ?? null,
         campaignName: campaign?.name ?? null,
         fundId: fund?.id ?? null,
