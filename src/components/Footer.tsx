@@ -24,7 +24,7 @@ export default function Footer() {
       }}
     >
       <Typography variant="body2" color="text.secondary">
-        © {year} Bollman Software Solutions, LLC ·{' '}
+        © {year} Bollman Software Solutions, LLC |{' '}
         <Link
           href="https://bollmansoftware.com"
           target="_blank"
@@ -33,6 +33,17 @@ export default function Footer() {
           color="primary"
         >
           Bollman Software Solutions
+        </Link>
+        {' '}|{' '}
+        <img src={"/GitHub_Invertocat_Black.svg"} alt="Github Logo" height={14} style={{ verticalAlign: 'middle' }} />{' '}
+        <Link
+          href="https://github.com/BollmanSoftwareSolutions/donor-tracking-demo"
+          target="_blank"
+          rel="noopener noreferrer"
+          underline="hover"
+          color="primary"
+        >
+          GitHub Repository
         </Link>
       </Typography>
     </Box>
