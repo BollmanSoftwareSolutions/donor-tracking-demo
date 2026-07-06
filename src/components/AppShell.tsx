@@ -30,6 +30,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutlined'
 import CheckIcon from '@mui/icons-material/Check'
 import type { ReactNode } from 'react'
 import { NAV_ITEMS, roleAllows } from './navConfig'
+import Footer from './Footer'
 import { useTenant } from '../hooks/useTenant'
 
 const DRAWER_WIDTH = 264
@@ -314,10 +315,14 @@ export default function AppShell({ children }: { children: ReactNode }) {
           flexGrow: 1,
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
         }}
       >
         <Toolbar />
-        <Box sx={{ p: { xs: 2, sm: 3 } }}>{children}</Box>
+        <Box sx={{ p: { xs: 2, sm: 3 }, flexGrow: 1 }}>{children}</Box>
+        <Footer />
       </Box>
     </Box>
   )
